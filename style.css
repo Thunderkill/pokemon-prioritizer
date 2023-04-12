@@ -6,6 +6,7 @@ body {
 }
 body {
   display: flex;
+  padding: 20px; /* Added padding around all sides */
 }
 #pokemon-list-container {
   flex: 1;
@@ -17,8 +18,9 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 5px 0;
-  max-height: calc(100vh - 110px);
+  max-height: calc(100vh - 110px - 40px); /* Adjusted max-height to account for body padding */
 }
+
 .pokemon-item {
   padding: 10px;
   border: 1px solid #ccc;
@@ -37,7 +39,7 @@ img {
   margin-left: 20px;
 }
 textarea {
-  width: 100%;
+  width: calc(100% - 15px); /* Adjusted width to account for scrollbar */
   height: 80vh;
   resize: none;
 }
