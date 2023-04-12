@@ -15,3 +15,4 @@ Some things I came up to when generating (prompting) this page:
 * Debugging is sometimes hard and I tried to do as much as possible I could with chatgpt, sometimes I had to intervene and figure out myself what the bug was so I could ask chatgpt to fix it
 * I also started generating the git commits with chatgpt, you might see where the change happened.
 * The dockerfile and github action is also generated with chatgpt
+* When splitting the code into 3 different parts, chatgpt just refused to do that and continuously tried to modify the code I explicitly told it not to do. This part I had to fix manually.
