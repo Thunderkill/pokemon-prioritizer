@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokémon Prioritizer</title>
+    <style>
+      body {
+        display: flex;
+      }
+      #pokemon-list {
+        flex: 1;
+      }
+      .pokemon-item {
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin: 5px;
+        cursor: move;
+        transition: all 0.3s;
+      }
+      img {
+        max-width: 100%;
+      }
+      #priority-order {
+        flex: 1;
+        margin-left: 20px;
+      }
+      textarea {
+        width: 100%;
+        height: 80vh;
+        resize: none;
+      }
+      .error {
+        color: red;
+      }
+      button {
+        margin-top: 10px;
+      }
+      .placeholder {
+        height: 0;
+        margin: 5px;
+        padding: 10px;
+        border: 1px dashed #ccc;
+        transition: height 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>Pokémon Prioritizer</h1>
+      <div id="pokemon-list"></div>
+    </div>
+    <div id="priority-order">
+      <h2>Priority Order</h2>
+      <textarea id="priority-order-text"></textarea>
+      <p class="error" id="validation-error"></p>
+      <button id="fix-button" style="display: none">FIX</button>
+    </div>
+
+    <script>
+      const pokemonList = document.getElementById("pokemon-list");
+      const priorityOrderText = document.getElementById("priority-order-text");
+      const validationError = document.getElementById("validation-error");
+      const fixButton = document.getElementById("fix-button");
+      let pokemonData;
+
+      async function fetchPokemonData() {
+        const response = await fetch("https://pogoapi.net/api/v1/released_pokemon.json");
+        const data = await response.json();
+        return data;
+      }
+
+      async function createPokemonItems() {
+        pokemonData = await fetchPokemonData();
+        for (const id in pokemonData) {
+          createPokemonItem(id, pokemonData[id].name);
+        }
+        updatePriorityOrder();
+      }
+
+      function createPokemonItem(id, name) {
+        const pokemonItem = document.createElement("div");
+        pokemonItem.classList.add("pokemon-item");
+        pokemonItem.draggable = true;
+        pokemonItem.dataset.id = id;
+
+        // Use a flex container to wrap both the image and the name
+        pokemonItem.innerHTML = `
+        <div style="display: flex; align-items: center;">
+          <img src="https://images.gameinfo.io/pokemon-trimmed/60/p${id}.webp" alt="${name}" width="60" height="60" draggable="false">
+          <span>${name}</span>
+        </div>
+      `;
+
+        pokemonItem.addEventListener("dragstart", handleDragStart);
+        pokemonItem.addEventListener("dragover", handleDragOver);
+        pokemonItem.addEventListener("drop", handleDrop);
+
+        pokemonList.appendChild(pokemonItem);
+      }
+
+      createPokemonItems();
+
+      function updatePriorityOrder() {
+        const pokemonItems = pokemonList.querySelectorAll(".pokemon-item");
+        let order = "";
+        pokemonItems.forEach((item) => {
+          order += item.dataset.id + "\n";
+        });
+        priorityOrderText.value = order;
+      }
+
+      function updatePokemonList() {
+        const ids = priorityOrderText.value.trim().split("\n");
+        pokemonList.innerHTML = "";
+        ids.forEach((id) => {
+          if (pokemonData[id]) {
+            createPokemonItem(id, pokemonData[id].name);
+          }
+        });
+      }
+
+      function validatePriorityOrder() {
+        const ids = priorityOrderText.value.trim().split("\n");
+        const idSet = new Set(ids);
+        const missingIds = [];
+        const extraIds = [];
+        const duplicateIds = [];
+        const idCounts = {};
+
+        for (const id in pokemonData) {
+          if (!idSet.has(id)) {
+            missingIds.push(id);
+          }
+        }
+
+        ids.forEach((id) => {
+          if (!pokemonData[id]) {
+            extraIds.push(id);
+          }
+          idCounts[id] = (idCounts[id] || 0) + 1;
+        });
+
+        for (const id in idCounts) {
+          if (idCounts[id] > 1) {
+            duplicateIds.push(id);
+          }
+        }
+
+        let errorMessage = "";
+        if (missingIds.length > 0) {
+          errorMessage += `Missing IDs: ${missingIds.join(", ")}\n`;
+        }
+        if (extraIds.length > 0) {
+          errorMessage += `Extra IDs: ${extraIds.join(", ")}\n`;
+        }
+        if (duplicateIds.length > 0) {
+          errorMessage += `Duplicate IDs: ${duplicateIds.join(", ")}`;
+        }
+
+        if (errorMessage) {
+          validationError.textContent = errorMessage;
+          fixButton.style.display = "inline";
+        } else {
+          validationError.textContent = "";
+          fixButton.style.display = "none";
+          updatePokemonList();
+        }
+      }
+
+      function fixPriorityOrder() {
+        const ids = priorityOrderText.value.trim().split("\n");
+        const newIds = [];
+        const usedIds = new Set();
+
+        ids.forEach((id) => {
+          if (pokemonData[id] && !usedIds.has(id)) {
+            newIds.push(id);
+            usedIds.add(id);
+          }
+        });
+
+        for (const id in pokemonData) {
+          if (!usedIds.has(id)) {
+            newIds.push(id);
+          }
+        }
+
+        priorityOrderText.value = newIds.join("\n");
+        validatePriorityOrder();
+      }
+
+      let placeholder;
+
+      function createPlaceholder() {
+        placeholder = document.createElement("div");
+        placeholder.classList.add("placeholder");
+      }
+      createPlaceholder();
+
+      let draggedElement;
+
+      function handleDragStart(e) {
+        e.dataTransfer.setData("text/plain", e.target.dataset.id);
+        draggedElement = e.target.closest(".pokemon-item");
+        draggedElement.style.opacity = "0.5";
+
+        // Add the following lines to set the drag image to a transparent pixel
+        const transparentPixel = new Image();
+        transparentPixel.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+        e.dataTransfer.setDragImage(transparentPixel, 0, 0);
+
+        // Add the ondragend event listener to reset the opacity and update the priority order
+        draggedElement.addEventListener("dragend", resetDraggedElement);
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+
+        const target = e.target.closest(".pokemon-item");
+        if (!target || target === draggedElement) return;
+
+        const bounding = target.getBoundingClientRect();
+        const offset = bounding.y + bounding.height / 2;
+
+        if (e.clientY - offset > 0) {
+          target.parentNode.insertBefore(draggedElement, target.nextSibling);
+        } else {
+          target.parentNode.insertBefore(draggedElement, target);
+        }
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        resetDraggedElement();
+      }
+
+      function resetDraggedElement() {
+        if (draggedElement) {
+          draggedElement.style.opacity = "1";
+          updatePriorityOrder();
+          draggedElement.removeEventListener("dragend", resetDraggedElement);
+        }
+      }
+
+      priorityOrderText.addEventListener("input", validatePriorityOrder);
+      fixButton.addEventListener("click", fixPriorityOrder);
+    </script>
+  </body>
+</html>
