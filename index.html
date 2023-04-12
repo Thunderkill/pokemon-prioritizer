@@ -72,8 +72,13 @@
 
       async function createPokemonItems() {
         pokemonData = await fetchPokemonData();
+        let position = 1;
         for (const id in pokemonData) {
-          createPokemonItem(id, pokemonData[id].name);
+          const pokemonItem = createPokemonItem(id, pokemonData[id].name);
+          const priorityInput = pokemonItem.querySelector(".priority-input");
+          priorityInput.value = position;
+          position++;
+          pokemonList.appendChild(pokemonItem);
         }
         updatePriorityOrder();
       }
@@ -84,22 +89,69 @@
         pokemonItem.draggable = true;
         pokemonItem.dataset.id = id;
 
-        // Use a flex container to wrap both the image and the name
-        pokemonItem.innerHTML = `
-        <div style="display: flex; align-items: center;">
-          <img src="https://images.gameinfo.io/pokemon-trimmed/60/p${id}.webp" alt="${name}" width="60" height="60" draggable="false">
-          <span>${name}</span>
-        </div>
-      `;
+        // Create an input field for the priority number
+        const priorityInput = document.createElement("input");
+        priorityInput.type = "number";
+        priorityInput.min = "1";
+        priorityInput.classList.add("priority-input");
+        priorityInput.addEventListener("keydown", handlePriorityChange);
+
+        const img = document.createElement("img");
+        img.src = `https://images.gameinfo.io/pokemon-trimmed/60/p${id}.webp`;
+        img.alt = name;
+        img.width = 60;
+        img.height = 60;
+        img.draggable = false;
+
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = name;
+
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.alignItems = "center";
+
+        // Add the priority input field to the left of the image
+        container.appendChild(priorityInput);
+        container.appendChild(img);
+        container.appendChild(nameSpan);
+
+        pokemonItem.appendChild(container);
 
         pokemonItem.addEventListener("dragstart", handleDragStart);
         pokemonItem.addEventListener("dragover", handleDragOver);
         pokemonItem.addEventListener("drop", handleDrop);
 
-        pokemonList.appendChild(pokemonItem);
+        return pokemonItem;
+      }
+
+      function handlePriorityChange(e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+
+          const priorityInput = e.target;
+          const item = priorityInput.closest(".pokemon-item");
+          const newPriority = parseInt(priorityInput.value, 10) - 1;
+          const currentPriority = Array.from(item.parentElement.children).indexOf(item);
+
+          if (newPriority >= 0 && newPriority < item.parentElement.children.length) {
+            item.parentElement.insertBefore(
+              item,
+              item.parentElement.children[newPriority < currentPriority ? newPriority : newPriority + 1]
+            );
+            updatePriorityOrder();
+          }
+          updatePriorityNumbers();
+        }
       }
 
       createPokemonItems();
+
+      function updatePriorityNumbers() {
+        const priorityInputs = pokemonList.querySelectorAll(".priority-input");
+        priorityInputs.forEach((input, index) => {
+          input.value = index + 1;
+        });
+      }
 
       function updatePriorityOrder() {
         const pokemonItems = pokemonList.querySelectorAll(".pokemon-item");
@@ -108,6 +160,7 @@
           order += item.dataset.id + "\n";
         });
         priorityOrderText.value = order;
+        updatePriorityNumbers();
       }
 
       function updatePokemonList() {
@@ -115,9 +168,11 @@
         pokemonList.innerHTML = "";
         ids.forEach((id) => {
           if (pokemonData[id]) {
-            createPokemonItem(id, pokemonData[id].name);
+            const pokemonItem = createPokemonItem(id, pokemonData[id].name);
+            pokemonList.appendChild(pokemonItem);
           }
         });
+        updatePriorityNumbers(); // Add this line
       }
 
       function validatePriorityOrder() {
@@ -187,6 +242,7 @@
         }
 
         priorityOrderText.value = newIds.join("\n");
+        updatePokemonList(); // Add this line
         validatePriorityOrder();
       }
 
