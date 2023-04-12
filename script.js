@@ -4,6 +4,18 @@ const validationError = document.getElementById("validation-error");
 const fixButton = document.getElementById("fix-button");
 let pokemonData;
 
+function throttle(func, delay) {
+  let lastCall = 0;
+  return function (...args) {
+    const now = Date.now();
+    if (now - lastCall < delay) {
+      return;
+    }
+    lastCall = now;
+    return func(...args);
+  };
+}
+
 async function fetchPokemonData() {
   const response = await fetch("https://pogoapi.net/api/v1/released_pokemon.json");
   const data = await response.json();
@@ -58,7 +70,7 @@ function createPokemonItem(id, name) {
   pokemonItem.appendChild(container);
 
   pokemonItem.addEventListener("dragstart", handleDragStart);
-  pokemonItem.addEventListener("dragover", handleDragOver);
+  pokemonItem.addEventListener("dragover", throttle(handleDragOver, 50));
   pokemonItem.addEventListener("drop", handleDrop);
 
   return pokemonItem;
