@@ -57,6 +57,6 @@ button {
   transition: height 0.3s;
 }
 #search-bar {
-  width: 100%;
+  width: calc(50% - 20px); /* Adjusted width to match the pokemon list */
   padding: 5px;
 }
