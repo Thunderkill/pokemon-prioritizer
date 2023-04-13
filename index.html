@@ -5,19 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pokémon Prioritizer</title>
     <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css"
+      integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js"
+      integrity="sha512-/DXTXr6nQodMUiq+IUJYCt2PPOUjrHJ9wFrqpJ3XkgPNOZVfMok7cRw6CSxyCQxXn6ozlESsSh1/sMCTF1rL/g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"
+      integrity="sha512-6UofPqm0QupIL0kzS/UIzekR73/luZdC6i/kXDbWnLOJoqwklBK6519iUnShaYceJ0y4FaiPtX/hRnV/X/xlUQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.min.js"
+      integrity="sha512-8qmis31OQi6hIRgvkht0s6mCOittjMa9GMqtK9hes5iEQBQE/Ca6yGE5FsW36vyipGoWQswBj/QBm2JR086Rkw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
   </head>
   <body>
-    <div id="pokemon-list-container">
-      <h1>Pokémon Prioritizer</h1>
-      <input type="text" id="search-bar" placeholder="Search by Pokémon name or ID" />
-      <div id="pokemon-list"></div>
-    </div>
-    <div id="priority-order">
-      <h2>Priority Order</h2>
-      <textarea id="priority-order-text"></textarea>
-      <p class="error" id="validation-error"></p>
-      <button id="fix-button" style="display: none">FIX</button>
-      <button id="copy-button">Copy to Clipboard</button>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="mb-3">
+            <h1 class="display-4">Pokémon Prioritizer</h1>
+            <input type="text" id="search-bar" class="form-control" placeholder="Search by Pokémon name or ID" />
+          </div>
+          <div id="pokemon-list" class="list-group"></div>
+        </div>
+        <div class="col-lg-8">
+          <h2 class="display-5">Priority Order</h2>
+          <textarea id="priority-order-text" class="form-control" rows="20" readonly></textarea>
+          <div class="mt-3">
+            <button id="fix-button" class="btn btn-danger" style="display: none">FIX</button>
+            <button id="copy-button" class="btn btn-primary">Copy to Clipboard</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="script.js"></script>

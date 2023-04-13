@@ -37,7 +37,7 @@ async function createPokemonItems() {
 
 function createPokemonItem(id, name) {
   const pokemonItem = document.createElement("div");
-  pokemonItem.classList.add("pokemon-item");
+  pokemonItem.classList.add("pokemon-item", "list-group-item");
   pokemonItem.draggable = true;
   pokemonItem.dataset.id = id;
 
@@ -54,9 +54,11 @@ function createPokemonItem(id, name) {
   img.width = 60;
   img.height = 60;
   img.draggable = false;
+  img.classList.add("mr-3"); // Add Bootstrap margin-right class
 
   const nameSpan = document.createElement("span");
   nameSpan.textContent = `${id} - ${name}`;
+  nameSpan.classList.add("align-middle"); // Add Bootstrap vertical alignment class
 
   const container = document.createElement("div");
   container.style.display = "flex";
