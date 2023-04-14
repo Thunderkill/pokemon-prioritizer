@@ -1,8 +1,24 @@
-# Use the official Nginx image as the base image
-FROM nginx:stable-alpine
+# Build backend
+FROM node:14 AS backend-build
+WORKDIR /usr/src/app
+COPY ./back/package*.json ./
+RUN npm install
+COPY ./back/ .
 
-# Copy the HTML file to the Nginx HTML directory
-COPY index.html /usr/share/nginx/html/index.html
+# Final stage
+FROM node:14
+WORKDIR /usr/src/app
+COPY --from=backend-build /usr/src/app .
 
-# Expose the Nginx port
-EXPOSE 80
+# Copy frontend files directly
+COPY ./front/ ./front
+
+# Expose both frontend and backend ports
+EXPOSE 80 3000
+
+# Install and configure Nginx
+RUN apt-get update && apt-get install -y nginx
+COPY ./nginx.conf /etc/nginx/sites-available/default
+
+# Start Nginx and the backend server
+CMD ["sh", "-c", "nginx && node app.js"]
