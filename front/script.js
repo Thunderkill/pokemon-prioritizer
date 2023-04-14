@@ -1,3 +1,5 @@
+const BASE_URL = "http://localhost:3000";
+
 const pokemonList = document.getElementById("pokemon-list");
 const priorityOrderText = document.getElementById("priority-order-text");
 const validationError = document.getElementById("validation-error");
@@ -301,3 +303,113 @@ searchBar.addEventListener("input", handleSearch);
 
 const copyButton = document.getElementById("copy-button");
 copyButton.addEventListener("click", copyToClipboard);
+
+// Save instance data (replace this with the actual API call)
+async function saveInstanceData(instanceId) {
+  const previousData = fetchInstance(instanceId);
+  // Update the pokemon_ids in the instance data and save it
+  const pokemonIds = getPokemonIds();
+  const data = { ...previousData, pokemon_ids: pokemonIds };
+  const response = await fetch(`${BASE_URL}/instance/${instanceId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (response.ok) {
+    return true;
+  } else {
+    console.error("Error updating instance data:", response.status);
+    return false;
+  }
+}
+
+function getPokemonIds() {
+  const pokemonItems = pokemonList.querySelectorAll(".pokemon-item");
+  const ids = [];
+  pokemonItems.forEach((item) => ids.push(item.dataset.id));
+  return ids;
+}
+
+// Fetch instance data (replace this with the actual API call)
+async function fetchInstances() {
+  const response = await fetch(`${BASE_URL}/instances`);
+
+  if (response.ok) {
+    const instanceData = await response.json();
+    return instanceData;
+  } else {
+    console.error("Error fetching instance data:", response.status);
+    return [];
+  }
+}
+
+async function fetchInstance(id) {
+  const detailsResponse = await fetch(`${BASE_URL}/instance/${id}`);
+  const detailsData = await detailsResponse.json();
+  return JSON.parse(detailsData);
+}
+
+async function importPokemonList(pokemonIds) {
+  // Update the priority number text area
+  const priorityOrderTextArea = document.getElementById("priority-order-text");
+  priorityOrderTextArea.value = pokemonIds.join("\n");
+  updatePokemonList();
+}
+
+function openImportModal() {
+  fetchInstances().then((instanceData) => {
+    const importModalBody = document.getElementById("importModalBody");
+    importModalBody.innerHTML = "";
+
+    instanceData.forEach((instance) => {
+      const instanceElement = document.createElement("button");
+      instanceElement.textContent = instance.name;
+      instanceElement.className = "btn btn-primary m-2";
+      instanceElement.onclick = async () => {
+        const instancePokemonData = await fetchInstance(instance.id);
+        importPokemonList(instancePokemonData.pokemon_ids);
+        importModal.hide();
+      };
+
+      importModalBody.appendChild(instanceElement);
+    });
+  });
+
+  const importModal = new bootstrap.Modal(document.getElementById("importModal"));
+  importModal.show();
+}
+
+function openSaveModal() {
+  fetchInstances().then((instanceData) => {
+    const saveModalBody = document.getElementById("saveModalBody");
+    saveModalBody.innerHTML = "";
+
+    instanceData.forEach((instance) => {
+      const instanceElement = document.createElement("button");
+      instanceElement.textContent = instance.name;
+      instanceElement.className = "btn btn-primary m-2";
+      instanceElement.onclick = () => {
+        if (confirm(`Are you sure you want to save to ${instance.name}?`)) {
+          saveInstanceData(instance.id);
+          saveModal.hide();
+        }
+      };
+
+      saveModalBody.appendChild(instanceElement);
+    });
+  });
+
+  const saveModal = new bootstrap.Modal(document.getElementById("saveModal"));
+  saveModal.show();
+}
+
+// Get the buttons by their id attributes
+const importButton = document.getElementById("import-button");
+const saveButton = document.getElementById("save-button");
+
+// Add event listeners for the click event
+importButton.addEventListener("click", openImportModal);
+saveButton.addEventListener("click", openSaveModal);

@@ -1,8 +1,10 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const mysql = require('mysql2/promise');
+const mysql = require("mysql2/promise");
+const cors = require("cors");
 
 app.use(express.json());
+app.use(cors());
 
 const dbConfig = {
   host: process.env.MYSQL_HOST,
@@ -11,7 +13,7 @@ const dbConfig = {
   database: process.env.MYSQL_DATABASE,
 };
 
-app.get('/instances', async (req, res) => {
+app.get("/instances", async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
     const [rows] = await connection.query('SELECT id, name FROM instance WHERE type = "pokemon_iv"');
@@ -21,20 +23,20 @@ app.get('/instances', async (req, res) => {
   }
 });
 
-app.get('/instance/:id', async (req, res) => {
+app.get("/instance/:id", async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
-    const [rows] = await connection.query('SELECT data FROM instance WHERE id = ?', [req.params.id]);
+    const [rows] = await connection.query("SELECT data FROM instance WHERE id = ?", [req.params.id]);
     res.json(rows[0].data);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-app.put('/instance/:id', async (req, res) => {
+app.put("/instance/:id", async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
-    await connection.query('UPDATE instance SET data = ? WHERE id = ?', [req.body.data, req.params.id]);
+    await connection.query("UPDATE instance SET data = ? WHERE id = ?", [JSON.stringify(req.body), req.params.id]);
     res.sendStatus(200);
   } catch (error) {
     res.status(500).json({ error: error.message });
