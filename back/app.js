@@ -24,9 +24,11 @@ const passwordValidationMiddleware = (req, res, next) => {
   }
 };
 
-app.use(passwordValidationMiddleware);
+const apiRouter = express.Router();
 
-app.get("/instances", async (req, res) => {
+apiRouter.use(passwordValidationMiddleware);
+
+apiRouter.get("/instances", async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
     const [rows] = await connection.query('SELECT id, name FROM instance WHERE type = "pokemon_iv"');
@@ -36,7 +38,7 @@ app.get("/instances", async (req, res) => {
   }
 });
 
-app.get("/instance/:id", async (req, res) => {
+apiRouter.get("/instance/:id", async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
     const [rows] = await connection.query("SELECT data FROM instance WHERE id = ?", [req.params.id]);
@@ -46,7 +48,7 @@ app.get("/instance/:id", async (req, res) => {
   }
 });
 
-app.put("/instance/:id", async (req, res) => {
+apiRouter.put("/instance/:id", async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
     await connection.query("UPDATE instance SET data = ? WHERE id = ?", [JSON.stringify(req.body), req.params.id]);
@@ -56,7 +58,9 @@ app.put("/instance/:id", async (req, res) => {
   }
 });
 
-const port = process.env.PORT || 3000;
+app.use("/api", apiRouter);
+
+const port = 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

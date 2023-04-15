@@ -1,5 +1,3 @@
-const BASE_API_URL = localStorage.getItem("BASE_API_URL") ?? "http://localhost:3000";
-
 const pokemonList = document.getElementById("pokemon-list");
 const priorityOrderText = document.getElementById("priority-order-text");
 const validationError = document.getElementById("validation-error");
@@ -311,7 +309,7 @@ async function saveInstanceData(instanceId) {
   // Update the pokemon_ids in the instance data and save it
   const pokemonIds = getPokemonIds();
   const data = { ...previousData, pokemon_ids: pokemonIds };
-  const response = await fetchData(`${BASE_API_URL}/instance/${instanceId}?password=${getPassword()}`, {
+  const response = await fetchData(`/api/instance/${instanceId}?password=${getPassword()}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -336,7 +334,7 @@ function getPokemonIds() {
 
 // Fetch instance data (replace this with the actual API call)
 async function fetchInstances() {
-  const response = await fetchData(`${BASE_API_URL}/instances?password=${getPassword()}`);
+  const response = await fetchData(`/api/instances?password=${getPassword()}`);
 
   if (response.ok) {
     const instanceData = await response.json();
@@ -348,7 +346,7 @@ async function fetchInstances() {
 }
 
 async function fetchInstance(id) {
-  const detailsResponse = await fetchData(`${BASE_API_URL}/instance/${id}?password=${getPassword()}`);
+  const detailsResponse = await fetchData(`/api/instance/${id}?password=${getPassword()}`);
   const detailsData = await detailsResponse.json();
   return JSON.parse(detailsData);
 }
