@@ -16,3 +16,4 @@ Some things I came up to when generating (prompting) this page:
 * I also started generating the git commits with chatgpt, you might see where the change happened.
 * The dockerfile and github action is also generated with chatgpt
 * When splitting the code into 3 different parts, chatgpt just refused to do that and continuously tried to modify the code I explicitly told it not to do. This part I had to fix manually.
+* It also seems to like inventing new methods that it tolds us nothing about, prompting us to ask what they contain

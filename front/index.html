@@ -12,6 +12,117 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="mb-3">
+            <h1 class="display-4">Pokémon Prioritizer</h1>
+            <input type="text" id="search-bar" class="form-control" placeholder="Search by Pokémon name or ID" />
+          </div>
+          <div id="pokemon-list" class="list-group"></div>
+        </div>
+        <div class="col-lg-8">
+          <h2 class="display-5">Priority Order</h2>
+          <button id="loginButton" class="btn btn-primary">Login</button>
+          <div id="loggedInButtons" style="display: none">
+            <button id="import-button" class="btn btn-success">Import</button>
+            <button id="save-button" class="btn btn-warning">Save</button>
+          </div>
+          <textarea class="form-control" id="priority-order-text" rows="20"></textarea>
+          <p class="text-danger" id="validation-error"></p>
+          <div class="mt-3">
+            <button id="fix-button" class="btn btn-danger" style="display: none">FIX</button>
+            <button id="copy-button" class="btn btn-primary">Copy to Clipboard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="importModalLabel">Import Instance</h5>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="importModalBody">
+            <!-- The instance list will be populated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Modal -->
+    <div class="modal fade" id="saveModal" tabindex="-1" aria-labelledby="saveModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="saveModalLabel">Save to Instance</h5>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="saveModalBody">
+            <!-- The instance list will be populated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="loginModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="loginModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginModalLabel">Login</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="passwordInput">Password</label>
+              <input type="password" class="form-control" id="passwordInput" placeholder="Enter password" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="submitLogin">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="errorModalLabel">Error</h5>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="errorMessage"></p>
+          </div>
+          <div class="modal-footer">
+            <button id="close-error-button" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js"
@@ -31,61 +142,6 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
-  </head>
-  <body>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="mb-3">
-            <h1 class="display-4">Pokémon Prioritizer</h1>
-            <input type="text" id="search-bar" class="form-control" placeholder="Search by Pokémon name or ID" />
-          </div>
-          <div id="pokemon-list" class="list-group"></div>
-        </div>
-        <div class="col-lg-8">
-          <h2 class="display-5">Priority Order</h2>
-          <button id="import-button" type="button" class="btn btn-primary">Import</button>
-          <button id="save-button" type="button" class="btn btn-primary">Save</button>
-          <textarea class="form-control" id="priority-order-text" rows="20"></textarea>
-          <p class="text-danger" id="validation-error"></p>
-          <div class="mt-3">
-            <button id="fix-button" class="btn btn-danger" style="display: none">FIX</button>
-            <button id="copy-button" class="btn btn-primary">Copy to Clipboard</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Import Modal -->
-    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="importModalLabel">Import Instance</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" id="importModalBody">
-            <!-- The instance list will be populated here -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Save Modal -->
-    <div class="modal fade" id="saveModal" tabindex="-1" aria-labelledby="saveModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="saveModalLabel">Save to Instance</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" id="saveModalBody">
-            <!-- The instance list will be populated here -->
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script src="script.js"></script>
   </body>
 </html>

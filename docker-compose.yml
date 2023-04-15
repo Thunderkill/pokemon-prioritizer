@@ -11,6 +11,7 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: dbpass
       MYSQL_DATABASE: rdmdb
+      PASSWORD: password
       PORT: 3000
 
 volumes:

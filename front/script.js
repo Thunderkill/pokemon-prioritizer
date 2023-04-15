@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000";
+const BASE_API_URL = localStorage.getItem("BASE_API_URL") ?? "http://localhost:3000";
 
 const pokemonList = document.getElementById("pokemon-list");
 const priorityOrderText = document.getElementById("priority-order-text");
@@ -306,11 +306,12 @@ copyButton.addEventListener("click", copyToClipboard);
 
 // Save instance data (replace this with the actual API call)
 async function saveInstanceData(instanceId) {
-  const previousData = fetchInstance(instanceId);
+  const previousData = await fetchInstance(instanceId);
+  console.log(previousData);
   // Update the pokemon_ids in the instance data and save it
   const pokemonIds = getPokemonIds();
   const data = { ...previousData, pokemon_ids: pokemonIds };
-  const response = await fetch(`${BASE_URL}/instance/${instanceId}`, {
+  const response = await fetchData(`${BASE_API_URL}/instance/${instanceId}?password=${getPassword()}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -335,7 +336,7 @@ function getPokemonIds() {
 
 // Fetch instance data (replace this with the actual API call)
 async function fetchInstances() {
-  const response = await fetch(`${BASE_URL}/instances`);
+  const response = await fetchData(`${BASE_API_URL}/instances?password=${getPassword()}`);
 
   if (response.ok) {
     const instanceData = await response.json();
@@ -347,7 +348,7 @@ async function fetchInstances() {
 }
 
 async function fetchInstance(id) {
-  const detailsResponse = await fetch(`${BASE_URL}/instance/${id}`);
+  const detailsResponse = await fetchData(`${BASE_API_URL}/instance/${id}?password=${getPassword()}`);
   const detailsData = await detailsResponse.json();
   return JSON.parse(detailsData);
 }
@@ -357,6 +358,47 @@ async function importPokemonList(pokemonIds) {
   const priorityOrderTextArea = document.getElementById("priority-order-text");
   priorityOrderTextArea.value = pokemonIds.join("\n");
   updatePokemonList();
+}
+
+async function fetchData(url, options = {}) {
+  try {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+      localStorage.removeItem("password");
+      updateLoginState();
+      showErrorModal("Failed to authenticate. Please log in again.");
+      throw new Error("Unauthorized");
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+}
+
+function showErrorModal(message) {
+  const errorModalElement = document.getElementById("errorModal");
+  const errorModal = new bootstrap.Modal(errorModalElement, {});
+  const errorMessage = document.getElementById("errorMessage");
+
+  function close() {
+    openedModals.forEach((x) => x.hide());
+    errorModal.hide();
+    openedModals = [];
+  }
+
+  const closeButton = errorModalElement.querySelector(".btn-close");
+  closeButton.addEventListener("click", close);
+
+  errorModalElement.querySelector("#close-error-button").addEventListener("click", close);
+
+  errorMessage.textContent = message;
+  errorModal.show();
 }
 
 function openImportModal() {
@@ -371,6 +413,7 @@ function openImportModal() {
       instanceElement.onclick = async () => {
         const instancePokemonData = await fetchInstance(instance.id);
         importPokemonList(instancePokemonData.pokemon_ids);
+        openedModals = openedModals.filter((x) => x != importModal);
         importModal.hide();
       };
 
@@ -380,7 +423,10 @@ function openImportModal() {
 
   const importModal = new bootstrap.Modal(document.getElementById("importModal"));
   importModal.show();
+  openedModals.push(importModal);
 }
+
+let openedModals = [];
 
 function openSaveModal() {
   fetchInstances().then((instanceData) => {
@@ -394,6 +440,7 @@ function openSaveModal() {
       instanceElement.onclick = () => {
         if (confirm(`Are you sure you want to save to ${instance.name}?`)) {
           saveInstanceData(instance.id);
+          openedModals = openedModals.filter((x) => x != saveModal);
           saveModal.hide();
         }
       };
@@ -404,6 +451,11 @@ function openSaveModal() {
 
   const saveModal = new bootstrap.Modal(document.getElementById("saveModal"));
   saveModal.show();
+  openedModals.push(saveModal);
+}
+
+function getPassword() {
+  return localStorage.getItem("password");
 }
 
 // Get the buttons by their id attributes
@@ -413,3 +465,46 @@ const saveButton = document.getElementById("save-button");
 // Add event listeners for the click event
 importButton.addEventListener("click", openImportModal);
 saveButton.addEventListener("click", openSaveModal);
+
+function updateLoginState() {
+  const loginButton = document.getElementById("loginButton");
+  const loggedInButtons = document.getElementById("loggedInButtons");
+  const password = localStorage.getItem("password");
+  if (password) {
+    loginButton.style.display = "none";
+    loggedInButtons.style.display = "block";
+  } else {
+    loginButton.style.display = "block";
+    loggedInButtons.style.display = "none";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const loginButton = document.getElementById("loginButton");
+  const submitLogin = document.getElementById("submitLogin");
+  const loginModalElement = document.getElementById("loginModal");
+  const loginModal = new bootstrap.Modal(loginModalElement, {});
+
+  loginButton.addEventListener("click", () => {
+    loginModal.show();
+  });
+
+  submitLogin.addEventListener("click", () => {
+    const passwordInput = document.getElementById("passwordInput");
+    const password = passwordInput.value;
+    if (password) {
+      localStorage.setItem("password", password);
+      passwordInput.value = "";
+      loginModal.hide();
+      updateLoginState();
+    } else {
+      alert("Please enter a password");
+    }
+  });
+
+  updateLoginState();
+
+  // Add event listeners for openImportModal and openSaveModal functions
+  document.getElementById("importButton").addEventListener("click", openImportModal);
+  document.getElementById("saveButton").addEventListener("click", openSaveModal);
+});

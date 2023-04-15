@@ -13,6 +13,19 @@ const dbConfig = {
   database: process.env.MYSQL_DATABASE,
 };
 
+const passwordValidationMiddleware = (req, res, next) => {
+  const expectedPassword = process.env.PASSWORD;
+  const providedPassword = req.query.password;
+
+  if (providedPassword === expectedPassword) {
+    next();
+  } else {
+    res.status(401).json({ error: "Unauthorized: Invalid password" });
+  }
+};
+
+app.use(passwordValidationMiddleware);
+
 app.get("/instances", async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
